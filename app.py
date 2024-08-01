@@ -61,12 +61,13 @@ def agendar():
     servicio = request.form['servicio']
     fecha = request.form['fecha']
     hora = request.form['hora']
+    contacto = request.form['contacto']
 
     reserved_times = get_reserved_times(fecha)
     if hora in reserved_times:
         return "El horario seleccionado ya está reservado.", 400
 
-    values = [[nombre, servicio, fecha, hora]]
+    values = [[nombre, servicio, fecha, hora, contacto]]
     body = {'values': values}
     result = sheet.values().append(
         spreadsheetId=SPREADSHEET_ID,
@@ -75,10 +76,10 @@ def agendar():
         body=body
     ).execute()
 
-    return redirect(url_for('confirmacion', nombre=nombre, servicio=servicio, fecha=fecha, hora=hora))
+    return redirect(url_for('confirmacion', nombre=nombre, servicio=servicio, fecha=fecha, hora=hora, contacto=contacto))
 
 
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
