@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import datetime
+import pytz
 
 app = Flask(__name__)
 
@@ -17,7 +18,10 @@ sheet = service.spreadsheets()
 
 SPREADSHEET_ID = '1B0NAArfCPsx08F_Qas3g3-PGuKpwyuQm63P66dN9C1s'
 
-available_times = ["07:30", "08:30", "09:30", "10:30", "11:30", "13:30", "14:30", "15:30", "16:30", "17:30"]
+weekday_times = ["10:00", "11:00", "13:30", "14:30", "15:30", "16:30", "17:30", "18:30", "19:30"]
+saturday_times = ["09:00", "10:00", "11:00", "13:30", "14:30", "15:30", "16:30", "17:30"]
+
+TIMEZONE = pytz.timezone("America/Asuncion")
 
 def get_reserved_times(date):
     result = sheet.values().get(
@@ -31,8 +35,18 @@ def get_reserved_times(date):
 
 def get_available_times(date):
     date_obj = datetime.datetime.strptime(date, "%Y-%m-%d")
+    current_time = datetime.datetime.now(TIMEZONE).time()
     if date_obj.weekday() == 6:  # Domingo
         return []
+    
+    if date_obj.weekday() == 5: #Sabaduki
+        available_times = saturday_times
+    else:
+        available_times = weekday_times
+
+    if date_obj.date() == datetime.datetime.now(TIMEZONE).date():
+        current_time_str = current_time.strftime("%H:%M")
+        available_times = [time for time in available_times if time > current_time_str]
     
     reserved_times = get_reserved_times(date)
     return [time for time in available_times if time not in reserved_times]
@@ -82,4 +96,4 @@ def agendar():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
