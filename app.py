@@ -79,7 +79,7 @@ def agendar():
 
     reserved_times = get_reserved_times(fecha)
     if hora in reserved_times:
-        return "El horario seleccionado ya está reservado.", 400
+        return  render_template('error_reservado.html'), 400
 
     values = [[nombre, servicio, fecha, hora, contacto]]
     body = {'values': values}
